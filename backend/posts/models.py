@@ -1,3 +1,32 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50)
+    def __str__(self):
+        return self.name
+
+class Post(models.Model):
+    title = models.CharField(max_length=128)
+    text = models.TextField()
+    author_id = models.ManyToManyField(User)
+    is_published = models.BooleanField(default=False)
+    creation_data = models.DateField(auto_now_add=True)
+    last_modified = models.DateField(auto_now=True)
+    tags_id = models.ManyToManyField(Tag)
+
+    def __str__(self):
+        return self.title[:10] + '...'
+
+class PostLike(models.Model):
+    post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
+    user_id = models.OneToOneField(User, on_delete=models.CASCADE)
+    pass
+
+class PostDislike(models.Model):
+    post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
+    user_id = models.OneToOneField(User, on_delete=models.CASCADE)
+    pass
+
