@@ -8,6 +8,7 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+
 class Post(models.Model):
     title = models.CharField(max_length=128)
     text = models.TextField()
@@ -18,15 +19,14 @@ class Post(models.Model):
     tags_id = models.ManyToManyField(Tag)
 
     def __str__(self):
-        return self.title[:10] + '...'
+        return self.title[:10] + '...' if len(self.title) > 10 else self.title
+
 
 class PostLike(models.Model):
     post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
     user_id = models.OneToOneField(User, on_delete=models.CASCADE)
-    pass
+
 
 class PostDislike(models.Model):
     post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
     user_id = models.OneToOneField(User, on_delete=models.CASCADE)
-    pass
-
