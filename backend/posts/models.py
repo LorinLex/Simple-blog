@@ -16,7 +16,7 @@ class Post(models.Model):
     is_published = models.BooleanField(default=False)
     creation_data = models.DateField(auto_now_add=True)
     last_modified = models.DateField(auto_now=True)
-    tags_id = models.ManyToManyField(Tag)
+    tags_id = models.ManyToManyField(Tag, default=None)
 
     def __str__(self):
         return self.title[:10] + '...' if len(self.title) > 10 else self.title

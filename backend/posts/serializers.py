@@ -38,18 +38,8 @@ class PostSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    # def read(self):
-    #   pass
-    #
-    # def update(self):
-    #   pass
-
     def get_post_likes(self, obj):
         return PostLike.objects.filter(post_id=obj.id).count()
 
     def get_post_dislikes(self, obj):
         return PostDislike.objects.filter(post_id=obj.id).count()
-
-
-class LikeSerializer(serializers.Serializer):
-    pass
