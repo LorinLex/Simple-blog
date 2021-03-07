@@ -12,7 +12,7 @@ class Tag(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length=128)
     text = models.TextField()
-    author_id = models.ManyToManyField(User)
+    author_id = models.ForeignKey(User, on_delete=models.CASCADE)
     is_published = models.BooleanField(default=False)
     creation_data = models.DateField(auto_now_add=True)
     last_modified = models.DateField(auto_now=True)
