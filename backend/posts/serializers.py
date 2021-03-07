@@ -41,7 +41,6 @@ class PostSerializer(serializers.ModelSerializer):
         instance.title = validated_data.get('title', instance.title)
         instance.text = validated_data.get('text', instance.text)
         instance.is_published = validated_data.get('is_published', instance.is_published)
-        # instance.tags_id
         instance.save()
         return instance
 

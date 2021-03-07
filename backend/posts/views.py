@@ -1,12 +1,22 @@
 from django.shortcuts import render
+from django.contrib.auth.models import User
 from .serializers import PostSerializer
 from .models import Post
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 import json
 
 # Create your views here.
+
+def get_object(pk):
+    try:
+        return Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 class PostList(APIView):
     def get(self, request):
@@ -24,16 +34,9 @@ class PostList(APIView):
 
 
 class PostDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
     def get(self, request, pk):
         obj = self.get_object(pk)
-        # print(request.user)
-        return Response(PostSerializer(obj, many=False).data)
+        return Response(PostSerializer(obj, many=False, context={'user': request.user}).data)
 
     def put(self, request, pk):
         obj = self.get_object(pk)
@@ -46,3 +49,35 @@ class PostDetail(APIView):
     def delete(self, request, pk):
         self.get_object(pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class Like(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        obj = get_object(pk)
+        try:
+            obj.likes.get(pk=request.user.id)
+            obj.likes.remove(request.user.id)
+            obj.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except User.DoesNotExist:
+            obj.likes.add(request.user.id)
+            obj.save()
+            return Response(status=status.HTTP_201_CREATED)
+
+
+class Dislike(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        obj = get_object(pk)
+        try:
+            obj.dislikes.get(pk=request.user.id)
+            obj.dislikes.remove(request.user.id)
+            obj.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except User.DoesNotExist:
+            obj.dislikes.add(request.user.id)
+            obj.save()
+            return Response(status=status.HTTP_201_CREATED)
