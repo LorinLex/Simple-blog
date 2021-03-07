@@ -17,16 +17,7 @@ class Post(models.Model):
     creation_data = models.DateField(auto_now_add=True)
     last_modified = models.DateField(auto_now=True)
     tags_id = models.ManyToManyField(Tag, blank=True)
-
+    likes = models.ManyToManyField(User, related_name='Post_like', blank=True)
+    dislikes = models.ManyToManyField(User, related_name='Post_dislike', blank=True)
     def __str__(self):
         return self.title[:10] + '...' if len(self.title) > 10 else self.title
-
-
-class PostLike(models.Model):
-    post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
-    user_id = models.OneToOneField(User, on_delete=models.CASCADE)
-
-
-class PostDislike(models.Model):
-    post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
-    user_id = models.OneToOneField(User, on_delete=models.CASCADE)

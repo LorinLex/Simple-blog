@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Post, Tag, PostLike, PostDislike
+from .models import Post, Tag
 
 class PostSerializer(serializers.ModelSerializer):
-    likes_count = serializers.SerializerMethodField(method_name='get_post_likes')
-    dislikes_count = serializers.SerializerMethodField(method_name='get_post_dislikes')
+    # TODO:  N+1 problem?
+    likes_count = serializers.IntegerField(source='likes.count', read_only=True)
+    dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
 
     class Meta:
         model = Post
