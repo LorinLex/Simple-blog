@@ -12,8 +12,7 @@ class PostList(APIView):
     def get(self, request):
         # all posts
         queryset = Post.objects.all()
-        print(request.user)
-        return Response(PostSerializer(queryset, many=True).data)
+        return Response(PostSerializer(queryset, many=True, context={'user': request.user}).data)
 
     # @swagger_auto_schema(method='post', manual_parameters=[title, text])
     def post(self, request):
@@ -33,6 +32,7 @@ class PostDetail(APIView):
 
     def get(self, request, pk):
         obj = self.get_object(pk)
+        # print(request.user)
         return Response(PostSerializer(obj, many=False).data)
 
     def put(self, request, pk):
