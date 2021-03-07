@@ -8,7 +8,7 @@ import json
 
 # Create your views here.
 
-class PostsView(APIView):
+class PostList(APIView):
     def get(self, request):
         # all posts
         queryset = Post.objects.all()
@@ -23,13 +23,26 @@ class PostsView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request):
-        pass
 
-    def delete(self, request, pk):
+class PostDetail(APIView):
+    def get_object(self, pk):
         try:
-            post = Post.objects.get(pk=request.data['post_id'])
+            return Post.objects.get(pk=pk)
         except Post.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        post.delete()
+
+    def get(self, request, pk):
+        obj = self.get_object(pk)
+        return Response(PostSerializer(obj, many=False).data)
+
+    def put(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = PostSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        self.get_object(pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
