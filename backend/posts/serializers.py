@@ -30,6 +30,8 @@ class PostSerializer(serializers.ModelSerializer):
             'creation_data',
             'likes_count',
             'dislikes_count',
+            'is_liked',
+            'is_disliked'
         ]
 
     def create(self, validated_data):
