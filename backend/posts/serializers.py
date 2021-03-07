@@ -43,3 +43,9 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_post_dislikes(self, obj):
         return PostDislike.objects.filter(post_id=obj.id).count()
+
+    def is_liked(self):
+        pass
+
+    def is_disliked(self):
+        pass
