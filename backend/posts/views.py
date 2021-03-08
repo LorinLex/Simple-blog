@@ -1,13 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from .serializers import PostSerializer
-from .models import Post
+from .models import Post, Tag
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-import json
 
 # Create your views here.
 
@@ -26,20 +25,25 @@ class PostList(APIView):
 
     # @swagger_auto_schema(method='post', manual_parameters=[title, text])
     def post(self, request):
-        serializer = PostSerializer(data=request.data)
+        # tags = []
+        # for tag_name in request.data['tags']:
+        #     tags[] = **Tag.objects.get_or_create(name=tag_name)
+        # request.data['tags'] = tags
+        serializer = PostSerializer(data=request.data, context={'user': request.user})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author_id=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PostDetail(APIView):
     def get(self, request, pk):
-        obj = self.get_object(pk)
+        print(request.data)
+        obj = get_object(pk)
         return Response(PostSerializer(obj, many=False, context={'user': request.user}).data)
 
     def put(self, request, pk):
-        obj = self.get_object(pk)
+        obj = get_object(pk)
         serializer = PostSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -47,7 +51,7 @@ class PostDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        self.get_object(pk).delete()
+        get_object(pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
