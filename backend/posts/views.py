@@ -27,10 +27,15 @@ class PostList(APIView):
     def post(self, request):
         # tags = []
         # for tag_name in request.data['tags']:
-        #     tags[] = **Tag.objects.get_or_create(name=tag_name)
-        # request.data['tags'] = tags
-        serializer = PostSerializer(data=request.data, context={'user': request.user})
+        #     obj, created = Tag.objects.get_or_create(name=tag_name)
+        #     tags.append(obj)
+        # print(tags)
+        tags_string = request.data.pop('tags')
+        tags = [ {'name': tag} for tag in tags_string]
+        serializer = PostSerializer(data={**request.data, 'tags_id': tags}, context={'user': request.user})
+        # it = iter(request.data['tags'])
         if serializer.is_valid():
+            # serializer.data.tags_id.set(tags)
             serializer.save(author_id=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

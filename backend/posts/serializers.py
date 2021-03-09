@@ -2,12 +2,28 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Post, Tag
 
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['name']
+
+    def create(self, validated_data):
+        return Tag.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.save()
+        return instance
+
+
 class PostSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
     dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
     is_liked = serializers.SerializerMethodField('is_liked_method')
     is_disliked = serializers.SerializerMethodField('is_disliked_method')
+    tags_id = TagSerializer(many=True)
 
     class Meta:
         model = Post
@@ -35,7 +51,13 @@ class PostSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        return Post.objects.create(**validated_data)
+        tags_obj = []
+        for tag in validated_data.pop('tags_id'):
+            obj, created = Tag.objects.get_or_create(name=tag['name'])
+            tags_obj.append(obj)
+        post =  Post.objects.create(**validated_data)
+        post.tags_id.add(*tags_obj)
+        return post
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -63,3 +85,4 @@ class PostSerializer(serializers.ModelSerializer):
         except User.DoesNotExist:
             return False
         return True
+
