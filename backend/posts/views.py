@@ -25,17 +25,17 @@ class PostList(APIView):
 
     # @swagger_auto_schema(method='post', manual_parameters=[title, text])
     def post(self, request):
-        # tags = []
-        # for tag_name in request.data['tags']:
-        #     obj, created = Tag.objects.get_or_create(name=tag_name)
+        tags = []
+        # for tag_name in request.data.pop('tags_id'):
+        #     # print(tag_name['name'])
+        #     obj, created = Tag.objects.get_or_create(name=tag_name['name'])
         #     tags.append(obj)
-        # print(tags)
-        tags_string = request.data.pop('tags')
-        tags = [ {'name': tag} for tag in tags_string]
-        serializer = PostSerializer(data={**request.data, 'tags_id': tags}, context={'user': request.user})
-        # it = iter(request.data['tags'])
+        #     print(tags)
+        # tags_string = request.data.pop('tags')
+        # tags = [ {'name': tag} for tag in tags_string]
+        print(request.data)
+        serializer = PostSerializer(data=request.data, context={'user': request.user})
         if serializer.is_valid():
-            # serializer.data.tags_id.set(tags)
             serializer.save(author_id=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

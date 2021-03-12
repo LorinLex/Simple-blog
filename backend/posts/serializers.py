@@ -9,7 +9,8 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['name']
 
     def create(self, validated_data):
-        return Tag.objects.create(**validated_data)
+        obj, created = Tag.objects.get_or_create(**validated_data)
+        return obj
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
@@ -51,12 +52,12 @@ class PostSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        tags_obj = []
-        for tag in validated_data.pop('tags_id'):
-            obj, created = Tag.objects.get_or_create(name=tag['name'])
-            tags_obj.append(obj)
+        tags_data = validated_data.pop('tags_id')
         post =  Post.objects.create(**validated_data)
-        post.tags_id.add(*tags_obj)
+        # print(post.id)
+        for tag in tags_data:
+            obj, created = Tag.objects.get_or_create(name=tag['name'])
+            obj.post_set.add(post)
         return post
 
     def update(self, instance, validated_data):
