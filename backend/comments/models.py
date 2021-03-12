@@ -16,9 +16,7 @@ class Comment(models.Model):
 class CommentLike(models.Model):
     post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
     user_id = models.OneToOneField(User, on_delete=models.CASCADE)
-    pass
 
 class CommentDislike(models.Model):
     post_id = models.OneToOneField(Post, on_delete=models.CASCADE)
     user_id = models.OneToOneField(User, on_delete=models.CASCADE)
-    pass
