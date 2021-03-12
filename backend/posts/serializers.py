@@ -54,7 +54,6 @@ class PostSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags_data = validated_data.pop('tags_id')
         post =  Post.objects.create(**validated_data)
-        # print(post.id)
         for tag in tags_data:
             obj, created = Tag.objects.get_or_create(name=tag['name'])
             obj.post_set.add(post)
@@ -64,6 +63,13 @@ class PostSerializer(serializers.ModelSerializer):
         instance.title = validated_data.get('title', instance.title)
         instance.text = validated_data.get('text', instance.text)
         instance.is_published = validated_data.get('is_published', instance.is_published)
+
+        tags_data = validated_data.pop('tags_id')
+        tags_obj = []
+        for tag in tags_data:
+            obj, created = Tag.objects.get_or_create(name=tag['name'])
+            tags_obj.append(obj)
+        instance.tags_id.set(tags_obj)
         instance.save()
         return instance
 

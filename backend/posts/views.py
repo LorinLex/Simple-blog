@@ -23,16 +23,7 @@ class PostList(APIView):
         queryset = Post.objects.all()
         return Response(PostSerializer(queryset, many=True, context={'user': request.user}).data)
 
-    # @swagger_auto_schema(method='post', manual_parameters=[title, text])
     def post(self, request):
-        tags = []
-        # for tag_name in request.data.pop('tags_id'):
-        #     # print(tag_name['name'])
-        #     obj, created = Tag.objects.get_or_create(name=tag_name['name'])
-        #     tags.append(obj)
-        #     print(tags)
-        # tags_string = request.data.pop('tags')
-        # tags = [ {'name': tag} for tag in tags_string]
         print(request.data)
         serializer = PostSerializer(data=request.data, context={'user': request.user})
         if serializer.is_valid():
@@ -49,7 +40,7 @@ class PostDetail(APIView):
 
     def put(self, request, pk):
         obj = get_object(pk)
-        serializer = PostSerializer(obj, data=request.data)
+        serializer = PostSerializer(obj, data=request.data, context={'user': request.user})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
