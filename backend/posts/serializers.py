@@ -111,25 +111,6 @@ class PostListSerializer(serializers.ModelSerializer):
             'is_disliked'
         ]
 
-    def create(self, validated_data):
-        # TODO: popping tags is not healthy, need to work with slug (how?)
-        tags_data = validated_data.pop('tags_id')
-        post =  Post.objects.create(**validated_data, author_id=self.context['user'])
-        tags = [Tag.objects.get_or_create(name=name)[0] for name in tags_data]
-        post.tags_id.add(*tags)
-        return post
-
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.text = validated_data.get('text', instance.text)
-        instance.is_published = validated_data.get('is_published', instance.is_published)
-
-        tags_data = validated_data.pop('tags_id')
-        tags = [Tag.objects.get_or_create(name=name)[0] for name in tags_data]
-        instance.tags_id.set(*tags)
-        instance.save()
-        return instance
-
     def is_liked_method(self, obj):
         try:
             obj.likes.get(pk=self.context['user'].id)
