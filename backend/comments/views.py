@@ -7,10 +7,9 @@ from .serializers import CommentSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
 
 # Create your views here.
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
@@ -23,6 +22,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def list(self, request, post_pk):
         queryset = Comment.objects.filter(post_id=post_pk)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            return self.get_paginated_response(CommentSerializer(page, context={'user': request.user}, many=True).data)
         return Response(CommentSerializer(queryset, context={'user': request.user}, many=True).data)
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
