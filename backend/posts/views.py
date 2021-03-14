@@ -12,15 +12,15 @@ from rest_framework.decorators import action
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    serializer = {
+    serializer_class = PostDetailSerializer
+    serializers = {
         'list': PostListSerializer,
-        'default': PostDetailSerializer,
     }
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return serializers.ListaGruppi
-        return serializers.default
+            return self.serializers.get(self.action, self.serializer_class)
+        return super(PostViewSet, self).get_serializer_class()
 
     def get_serializer_context(self):
         context = super(PostViewSet, self).get_serializer_context()

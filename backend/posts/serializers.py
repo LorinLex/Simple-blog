@@ -4,6 +4,14 @@ from .models import Post, Tag
 from django.core.exceptions import ObjectDoesNotExist
 
 
+def is_liked_disliked_method(field_name, self, obj):
+    try:
+        getattr(obj, field_name).get(pk=self.context['user'].id)
+    except User.DoesNotExist:
+        return False
+    return True
+
+
 class PostDetailSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
@@ -61,18 +69,10 @@ class PostDetailSerializer(serializers.ModelSerializer):
         return instance
 
     def is_liked_method(self, obj):
-        try:
-            obj.likes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
-            return False
-        return True
+        return is_liked_disliked_method('likes', self, obj)
 
     def is_disliked_method(self, obj):
-        try:
-            obj.dislikes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
-            return False
-        return True
+        return is_liked_disliked_method('dislikes', self, obj)
 
 class PostListSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
@@ -112,16 +112,8 @@ class PostListSerializer(serializers.ModelSerializer):
         ]
 
     def is_liked_method(self, obj):
-        try:
-            obj.likes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
-            return False
-        return True
+        return is_liked_disliked_method('likes', self, obj)
 
     def is_disliked_method(self, obj):
-        try:
-            obj.dislikes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
-            return False
-        return True
+        return is_liked_disliked_method('dislikes', self, obj)
 
