@@ -10,10 +10,10 @@ from rest_framework import status
 
 # Create your views here.
 
-def get_object(pk):
+def get_object(pk, model=Post):
     try:
-        return Post.objects.get(pk=pk)
-    except Post.DoesNotExist:
+        return model.objects.get(pk=pk)
+    except model.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 

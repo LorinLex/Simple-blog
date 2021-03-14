@@ -73,12 +73,6 @@ class PostSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def get_post_likes(self, obj):
-        return PostLike.objects.filter(post_id=obj.id).count()
-
-    def get_post_dislikes(self, obj):
-        return PostDislike.objects.filter(post_id=obj.id).count()
-
     def is_liked_method(self, obj):
         try:
             obj.likes.get(pk=self.context['user'].id)
