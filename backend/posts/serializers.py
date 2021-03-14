@@ -4,32 +4,6 @@ from .models import Post, Tag
 from django.core.exceptions import ObjectDoesNotExist
 
 
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = ['name']
-
-    def create(self, validated_data):
-        obj, created = Tag.objects.get_or_create(**validated_data)
-        return obj
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.save()
-        return instance
-
-
-class CreatableSlugRelatedField(serializers.SlugRelatedField):
-    def to_internal_value(self, data):
-        try:
-            print(self.get_queryset())
-            return self.get_queryset().get_or_create(**{self.slug_field: data})[0]
-        except ObjectDoesNotExist:
-            self.fail('does_not_exist', slug_name=self.slug_field, value=smart_text(data))
-        except (TypeError, ValueError):
-            self.fail('invalid')
-
-
 class PostSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
