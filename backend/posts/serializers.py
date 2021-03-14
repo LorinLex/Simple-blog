@@ -56,7 +56,7 @@ class PostSerializer(serializers.ModelSerializer):
 
         tags_data = validated_data.pop('tags_id')
         tags = [Tag.objects.get_or_create(name=name)[0] for name in tags_data]
-        instance.tags_id.set(tags)
+        instance.tags_id.set(*tags)
         instance.save()
         return instance
 
