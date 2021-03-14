@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-from .serializers import PostSerializer
+from .serializers import PostDetailSerializer, PostListSerializer
 from .models import Post, Tag
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -12,7 +12,15 @@ from rest_framework.decorators import action
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    serializer = {
+        'list': PostListSerializer,
+        'default': PostDetailSerializer,
+    }
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.ListaGruppi
+        return serializers.default
 
     def get_serializer_context(self):
         context = super(PostViewSet, self).get_serializer_context()
