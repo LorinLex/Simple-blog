@@ -21,7 +21,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         context = super(CommentViewSet, self).get_serializer_context()
+        print(self.request.user)
         context.update({'user': self.request.user})
         return context
+
+    def list(self, request, post_pk):
+        queryset = Comment.objects.filter(post_id=post_pk)
+        return Response(CommentSerializer(queryset, context={'user': request.user}, many=True).data)
+
 
 

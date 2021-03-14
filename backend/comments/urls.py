@@ -13,7 +13,7 @@ from posts.urls import router as post_router
 #     path('', include(router.urls))
 # ]
 
-router = routers.NestedDefaultRouter(post_router, r'posts', lookup='post_id')
+router = routers.NestedDefaultRouter(post_router, r'posts', lookup='post')
 
 router.register(r'comments', CommentViewSet)
 
