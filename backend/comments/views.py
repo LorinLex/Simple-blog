@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 
+
 def get_object(pk, model=Comment):
     try:
         return model.objects.get(pk=pk)
