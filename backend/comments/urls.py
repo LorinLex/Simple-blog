@@ -7,6 +7,6 @@ router = routers.DefaultRouter()
 
 router.register('', CommentViewSet)
 
-urlpatterns = []
-
-urlpatterns += router.urls
+urlpatterns = [
+    path('', include(router.urls))
+]
