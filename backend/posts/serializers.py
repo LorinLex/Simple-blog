@@ -45,9 +45,8 @@ class PostSerializer(serializers.ModelSerializer):
         # TODO: popping tags is not healthy, need to work with slug (how?)
         tags_data = validated_data.pop('tags_id')
         post =  Post.objects.create(**validated_data, author_id=self.context['user'])
-        for tag in tags_data:
-            obj, created = Tag.objects.get_or_create(name=tag)
-            obj.post_set.add(post)
+        tags = [Tag.objects.get_or_create(name=name)[0] for name in tags_data]
+        post.tags_id.add(*tags)
         return post
 
     def update(self, instance, validated_data):
@@ -56,11 +55,8 @@ class PostSerializer(serializers.ModelSerializer):
         instance.is_published = validated_data.get('is_published', instance.is_published)
 
         tags_data = validated_data.pop('tags_id')
-        tags_obj = []
-        for tag in tags_data:
-            obj, created = Tag.objects.get_or_create(name=tag)
-            tags_obj.append(obj)
-        instance.tags_id.set(tags_obj)
+        tags = [Tag.objects.get_or_create(name=name)[0] for name in tags_data]
+        instance.tags_id.set(tags)
         instance.save()
         return instance
 
