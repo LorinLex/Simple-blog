@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 from .serializers import PostSerializer
 from .models import Post, Tag
@@ -7,15 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 
 # Create your views here.
-
-def get_object(pk, model=Post):
-    try:
-        return model.objects.get(pk=pk)
-    except model.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -26,34 +20,35 @@ class PostViewSet(viewsets.ModelViewSet):
         context.update({'user': self.request.user})
         return context
 
-
-class Like(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-    def get(self, request, pk):
-        obj = get_object(pk)
+    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
+            url_path='like', url_name='post_like')
+    def like(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        response_status = status.HTTP_204_NO_CONTENT
         try:
-            obj.likes.get(pk=request.user.id)
-            obj.likes.remove(request.user.id)
-            obj.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            post.likes.get(pk=request.user.id)
+            post.likes.remove(request.user.id)
         except User.DoesNotExist:
-            obj.likes.add(request.user.id)
-            obj.save()
-            return Response(status=status.HTTP_201_CREATED)
+            post.likes.add(request.user.id)
+            post.dislikes.remove(request.user.id)
+            response_status = status.HTTP_201_CREATED
+        finally:
+            post.save()
+            return Response(status=response_status)
 
-
-class Dislike(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-    def get(self, request, pk):
-        obj = get_object(pk)
+    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
+            url_path='dislike', url_name='post_dislike')
+    def dislike(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        response_status = status.HTTP_204_NO_CONTENT
         try:
-            obj.dislikes.get(pk=request.user.id)
-            obj.dislikes.remove(request.user.id)
-            obj.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            post.dislikes.get(pk=request.user.id)
+            post.dislikes.remove(request.user.id)
         except User.DoesNotExist:
-            obj.dislikes.add(request.user.id)
-            obj.save()
-            return Response(status=status.HTTP_201_CREATED)
+            post.dislikes.add(request.user.id)
+            post.likes.remove(request.user.id)
+            response_status = status.HTTP_201_CREATED
+        finally:
+            post.save()
+            return Response(status=response_status)
+

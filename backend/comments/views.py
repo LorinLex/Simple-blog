@@ -5,21 +5,11 @@ from .models import Comment
 from posts.models import Post
 from .serializers import CommentSerializer
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.decorators import action
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
-
-
-def get_object(pk, model=Comment):
-    try:
-        return model.objects.get(pk=pk)
-    except model.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
@@ -51,7 +41,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='dislike', url_name='comment_dislike')
     def dislike(self, request, post_pk, pk):
-        comment = get_object(pk)
+        comment = get_object_or_404(Comment, pk=pk)
         try:
             comment.dislikes.get(pk=request.user.id)
             comment.dislikes.remove(request.user.id)
@@ -61,6 +51,3 @@ class CommentViewSet(viewsets.ModelViewSet):
             comment.dislikes.add(request.user.id)
             comment.save()
             return Response(status=status.HTTP_201_CREATED)
-
-
-
