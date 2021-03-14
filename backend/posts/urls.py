@@ -1,14 +1,15 @@
 from django.urls import path, include
-# from rest_framework import routers
-from .views import PostList, PostDetail, Like
+from rest_framework import routers
+from .views import Dislike, Like, PostViewSet
 
-# router = routers.DefaultRouter()
+router = routers.DefaultRouter()
 
-# router.register('/', PostsView)
+router.register('', PostViewSet)
 
 urlpatterns = [
-    path('', PostList.as_view()),
-    path('<int:pk>', PostDetail.as_view()),
     path('<int:pk>/like', Like.as_view()),
-    path('<int:pk>/dislike', Like.as_view()),
+    path('<int:pk>/dislike', Dislike.as_view()),
+    path('', include(router.urls))
 ]
+
+# urlpatterns += router.urls

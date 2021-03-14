@@ -53,7 +53,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tags_data = validated_data.pop('tags_id')
-        post =  Post.objects.create(**validated_data)
+        post =  Post.objects.create(**validated_data, author_id=self.context['user'])
         for tag in tags_data:
             obj, created = Tag.objects.get_or_create(name=tag['name'])
             obj.post_set.add(post)
