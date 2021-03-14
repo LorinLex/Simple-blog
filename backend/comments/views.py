@@ -27,27 +27,31 @@ class CommentViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='like', url_name='comment_like')
     def like(self, request, post_pk, pk):
-        comment = get_object_or_404(Comment, pk=pk)
+        comment = get_object_or_404(Post, pk=pk)
+        response_status = status.HTTP_204_NO_CONTENT
         try:
             comment.likes.get(pk=request.user.id)
             comment.likes.remove(request.user.id)
-            comment.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
         except User.DoesNotExist:
             comment.likes.add(request.user.id)
+            comment.dislikes.remove(request.user.id)
+            response_status = status.HTTP_201_CREATED
+        finally:
             comment.save()
-            return Response(status=status.HTTP_201_CREATED)
+            return Response(status=response_status)
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='dislike', url_name='comment_dislike')
     def dislike(self, request, post_pk, pk):
-        comment = get_object_or_404(Comment, pk=pk)
+        comment = get_object_or_404(Post, pk=pk)
+        response_status = status.HTTP_204_NO_CONTENT
         try:
             comment.dislikes.get(pk=request.user.id)
             comment.dislikes.remove(request.user.id)
-            comment.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
         except User.DoesNotExist:
             comment.dislikes.add(request.user.id)
+            comment.likes.remove(request.user.id)
+            response_status = status.HTTP_201_CREATED
+        finally:
             comment.save()
-            return Response(status=status.HTTP_201_CREATED)
+            return Response(status=response_status)
