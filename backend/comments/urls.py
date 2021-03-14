@@ -1,12 +1,22 @@
 from .views import CommentViewSet
 from rest_framework import renderers
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework import routers as default_routers
+from rest_framework_nested import routers
+from posts.urls import router as post_router
 
-router = routers.DefaultRouter()
+# router = default_routers.DefaultRouter()
+#
+# router.register('', CommentViewSet)
+#
+# urlpatterns = [
+#     path('', include(router.urls))
+# ]
 
-router.register('', CommentViewSet)
+router = routers.NestedDefaultRouter(post_router, r'posts', lookup='post')
 
-urlpatterns = []
+router.register(r'comments', CommentViewSet)
 
-urlpatterns += router.urls
+urlpatterns = [
+    path('', include(router.urls))
+]
