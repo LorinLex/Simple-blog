@@ -59,3 +59,13 @@ class PostViewSet(viewsets.ModelViewSet):
             post.save()
             return Response(status=response_status)
 
+    @action(methods=['get'], detail=False,
+            url_path='tag', url_name='posts_with_tag')
+    def posts_with_tag(self, request, tag_name):
+        tag = get_object_or_404(Tag, name=tag_name)
+        return Response(PostListSerializer(
+            Post.objects.filter(tag_id=tag),
+            many=True,
+            context={'user': request.user}
+        ).data)
+

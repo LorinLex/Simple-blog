@@ -23,8 +23,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         queryset = Comment.objects.filter(post_id=post_pk)
         page = self.paginate_queryset(queryset)
         if page is not None:
-            return self.get_paginated_response(CommentSerializer(page, context={'user': request.user}, many=True).data)
-        return Response(CommentSerializer(queryset, context={'user': request.user}, many=True).data)
+            return self.get_paginated_response(
+                CommentSerializer(page, context={'user': request.user}, many=True).data
+            )
+        return Response(CommentSerializer(
+            queryset, context={'user': request.user}, many=True
+        ).data)
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='like', url_name='comment_like')

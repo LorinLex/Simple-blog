@@ -60,7 +60,8 @@ class PostDetailSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.text = validated_data.get('text', instance.text)
-        instance.is_published = validated_data.get('is_published', instance.is_published)
+        instance.is_published = validated_data.get(
+            'is_published', instance.is_published)
 
         tags_data = validated_data.pop('tags_id')
         tags = [Tag.objects.get_or_create(name=name)[0] for name in tags_data]
