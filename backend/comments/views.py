@@ -5,23 +5,14 @@ from .models import Comment
 from posts.models import Post
 from .serializers import CommentSerializer
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.decorators import action
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 # Create your views here.
 
-def get_object(pk, model=Comment):
-    try:
-        return model.objects.get(pk=pk)
-    except model.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
 
     def get_serializer_context(self):
@@ -31,35 +22,43 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def list(self, request, post_pk):
         queryset = Comment.objects.filter(post_id=post_pk)
-        return Response(CommentSerializer(queryset, context={'user': request.user}, many=True).data)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            return self.get_paginated_response(
+                CommentSerializer(page, context={'user': request.user}, many=True).data
+            )
+        return Response(CommentSerializer(
+            queryset, context={'user': request.user}, many=True
+        ).data)
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='like', url_name='comment_like')
     def like(self, request, post_pk, pk):
-        comment = get_object_or_404(Comment, pk=pk)
+        comment = get_object_or_404(Post, pk=pk)
+        response_status = status.HTTP_204_NO_CONTENT
         try:
             comment.likes.get(pk=request.user.id)
             comment.likes.remove(request.user.id)
-            comment.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
         except User.DoesNotExist:
             comment.likes.add(request.user.id)
+            comment.dislikes.remove(request.user.id)
+            response_status = status.HTTP_201_CREATED
+        finally:
             comment.save()
-            return Response(status=status.HTTP_201_CREATED)
+            return Response(status=response_status)
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='dislike', url_name='comment_dislike')
     def dislike(self, request, post_pk, pk):
-        comment = get_object(pk)
+        comment = get_object_or_404(Post, pk=pk)
+        response_status = status.HTTP_204_NO_CONTENT
         try:
             comment.dislikes.get(pk=request.user.id)
             comment.dislikes.remove(request.user.id)
-            comment.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
         except User.DoesNotExist:
             comment.dislikes.add(request.user.id)
+            comment.likes.remove(request.user.id)
+            response_status = status.HTTP_201_CREATED
+        finally:
             comment.save()
-            return Response(status=status.HTTP_201_CREATED)
-
-
-
+            return Response(status=response_status)
