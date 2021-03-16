@@ -3,8 +3,9 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from .serializers import PostDetailSerializer, PostListSerializer
 from .models import Post, Tag
+from users.permissions import IsAuthorOrAdminOrReadOnly
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -15,6 +16,7 @@ from functools import reduce
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
+    permission_classes = [IsAuthorOrAdminOrReadOnly]
     serializer_class = PostDetailSerializer
     serializers = {
         'list': PostListSerializer,
@@ -30,7 +32,7 @@ class PostViewSet(viewsets.ModelViewSet):
         context.update({'user': self.request.user})
         return context
 
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
+    @action(methods=['post'], detail=True,
             url_path='like', url_name='post_like')
     def like(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
@@ -46,7 +48,7 @@ class PostViewSet(viewsets.ModelViewSet):
             post.save()
             return Response(status=response_status)
 
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
+    @action(methods=['post'], detail=True,
             url_path='dislike', url_name='post_dislike')
     def dislike(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
