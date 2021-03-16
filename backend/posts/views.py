@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
+from django.db.models import Q
 from .serializers import PostDetailSerializer, PostListSerializer
 from .models import Post, Tag
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -7,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from operator import and_
+from functools import reduce
 
 # Create your views here.
 
@@ -61,10 +64,14 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False,
             url_path='tag', url_name='posts_with_tag')
-    def posts_with_tag(self, request, tag_name):
-        tag = get_object_or_404(Tag, name=tag_name)
+    def posts_with_tag(self, request):
+        tag_names = request.query_params.get('tags').split(',')
+        tags = Tag.objects.filter(name__in=tag_names)
+        posts = Post.objects
+        for tag in tags:
+            posts = posts.filter(tags_id=tag)
         return Response(PostListSerializer(
-            Post.objects.filter(tag_id=tag),
+            posts,
             many=True,
             context={'user': request.user}
         ).data)

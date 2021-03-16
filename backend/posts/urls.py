@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework_nested import routers
 from .views import PostViewSet
 
-router = routers.DefaultRouter()
+router = routers.SimpleRouter(trailing_slash=False)
 
 router.register(r'posts', PostViewSet)
 
