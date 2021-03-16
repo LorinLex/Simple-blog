@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
+from users.permissions import IsAuthorOrAdminOrReadOnly
 from rest_framework import viewsets, status
 from .models import Comment
 from posts.models import Post
@@ -12,12 +13,14 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrAdminOrReadOnly]
     serializer_class = CommentSerializer
 
-    def get_serializer_context(self):
+    def get_serializer_context(self, **kwags):
         context = super(CommentViewSet, self).get_serializer_context()
-        context.update({'user': self.request.user})
+        post = get_object_or_404(Post, pk=self.kwargs['post_pk'])
+        context.update({'user': self.request.user,
+                        'post': post})
         return context
 
     def list(self, request, post_pk):
