@@ -9,7 +9,7 @@ class Profile(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    img = models.ImageField(upload_to='avatars/', blank=True)
+    user_img = models.ImageField(upload_to='avatars/', blank=True, null=True)
     status = models.CharField(max_length=100, blank=True)
     subscribe_tags = models.ManyToManyField(Tag, blank=True, related_name='subscribe_tags')
     favourite_posts = models.ManyToManyField(Post, blank=True, related_name='favourite_posts')
