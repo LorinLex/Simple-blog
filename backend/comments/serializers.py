@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.conf import settings
 from rest_framework import serializers
 from .models import Comment
 
@@ -45,13 +46,13 @@ class CommentSerializer(serializers.ModelSerializer):
     def is_liked_method(self, obj):
         try:
             obj.likes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
+        except settings.AUTH_BASE_MODEL.DoesNotExist:
             return False
         return True
 
     def is_disliked_method(self, obj):
         try:
             obj.dislikes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
+        except settings.AUTH_BASE_MODEL.DoesNotExist:
             return False
         return True

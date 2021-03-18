@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.conf import settings
 from rest_framework import serializers
 from .models import Post, Tag
 from django.core.exceptions import ObjectDoesNotExist
@@ -7,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 def is_liked_disliked_method(field_name, self, obj):
     try:
         getattr(obj, field_name).get(pk=self.context['user'].id)
-    except User.DoesNotExist:
+    except settings.AUTH_BASE_MODEL.DoesNotExist:
         return False
     return True
 
