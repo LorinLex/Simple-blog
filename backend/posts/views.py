@@ -1,16 +1,12 @@
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.models import User
-from django.db.models import Q
+from django.conf import settings
 from .serializers import PostDetailSerializer, PostListSerializer
 from .models import Post, Tag
 from users.permissions import IsAuthorOrAdminOrReadOnly
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from operator import and_
-from functools import reduce
 
 # Create your views here.
 
@@ -40,7 +36,7 @@ class PostViewSet(viewsets.ModelViewSet):
         try:
             post.likes.get(pk=request.user.id)
             post.likes.remove(request.user.id)
-        except User.DoesNotExist:
+        except settings.AUTH_USER_MODEL.DoesNotExist:
             post.likes.add(request.user.id)
             post.dislikes.remove(request.user.id)
             response_status = status.HTTP_201_CREATED
@@ -56,7 +52,7 @@ class PostViewSet(viewsets.ModelViewSet):
         try:
             post.dislikes.get(pk=request.user.id)
             post.dislikes.remove(request.user.id)
-        except User.DoesNotExist:
+        except settings.AUTH_USER_MODEL.DoesNotExist:
             post.dislikes.add(request.user.id)
             post.likes.remove(request.user.id)
             response_status = status.HTTP_201_CREATED

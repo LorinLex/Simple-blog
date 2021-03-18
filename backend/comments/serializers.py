@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework import serializers
 from .models import Comment
 
+
 class CommentSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
