@@ -47,6 +47,7 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
     path('', include('posts.urls')),
     path('', include('comments.urls')),
+    path('', include('users.urls')),
 ]
 
 if settings.DEBUG:

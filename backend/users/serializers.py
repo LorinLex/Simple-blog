@@ -5,7 +5,7 @@ from posts.models import Post, Tag
 from posts.serializers import PostListSerializer
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserListSerializer(serializers.ModelSerializer):
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
     dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
 
@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id',
+            'username',
             'first_name',
             'last_name',
             'is_staff',
@@ -34,11 +35,12 @@ class UserDetailSerializer(serializers.ModelSerializer):
     subscribe_tags = serializers.SlugRelatedField(
         many=True,
         slug_field='name',
-        queryset=Tag.objects.all()
+        queryset=Tag.objects.all(),
+        validators=None,
     )
     favourite_posts = PostListSerializer(many=True)
     user_posts = PostListSerializer(many=True)
-    subscribe_users = UserSerializer(many=True)
+    subscribe_users = UserListSerializer(many=True)
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
     dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
 
@@ -46,6 +48,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id',
+            'username',
             'first_name',
             'last_name',
             'user_img',
@@ -65,4 +68,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
             'date_joined',
             'likes_count',
             'dislikes_count',
+            'subscribe_tags',
+            'favourite_posts',
+            'user_posts',
+            'subscribe_users',
         ]
+

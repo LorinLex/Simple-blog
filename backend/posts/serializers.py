@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from rest_framework import serializers
 from .models import Post, Tag
@@ -8,9 +8,20 @@ from django.core.exceptions import ObjectDoesNotExist
 def is_liked_disliked_method(field_name, self, obj):
     try:
         getattr(obj, field_name).get(pk=self.context['user'].id)
-    except settings.AUTH_BASE_MODEL.DoesNotExist:
+    except get_user_model().DoesNotExist:
         return False
     return True
+
+
+class CreatableSlugRelatedField(serializers.SlugRelatedField):
+
+    def to_internal_value(self, data):
+        try:
+            return self.get_queryset().get_or_create(**{self.slug_field: data})[0]
+        except ObjectDoesNotExist:
+            self.fail('does_not_exist', slug_name=self.slug_field, value=smart_text(data))
+        except (TypeError, ValueError):
+            self.fail('invalid')
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
@@ -19,11 +30,12 @@ class PostDetailSerializer(serializers.ModelSerializer):
     dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
     is_liked = serializers.SerializerMethodField('is_liked_method')
     is_disliked = serializers.SerializerMethodField('is_disliked_method')
-    tags_id = serializers.SlugRelatedField(
+    tags_id = CreatableSlugRelatedField(
         many=True,
         slug_field='name',
-        queryset=Tag.objects.all()
+        queryset=Tag.objects.all(),
     )
+
 
     class Meta:
         model = Post
@@ -50,6 +62,12 @@ class PostDetailSerializer(serializers.ModelSerializer):
             'is_disliked'
         ]
 
+    def run_validators(self, value):
+        for validator in self.validators:
+            if isinstance(validator, validators.UniqueTogetherValidator):
+                self.validators.remove(validator)
+        super(PostDetailSerializer, self).run_validators(value)
+
     def create(self, validated_data):
         # TODO: popping tags is not healthy, need to work with slug (how?)
         tags_data = validated_data.pop('tags_id')
@@ -63,8 +81,8 @@ class PostDetailSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get('text', instance.text)
         instance.is_published = validated_data.get(
             'is_published', instance.is_published)
-
         tags_data = validated_data.pop('tags_id')
+        print('debug')
         tags = [Tag.objects.get_or_create(name=name)[0] for name in tags_data]
         instance.tags_id.set(*tags)
         instance.save()
