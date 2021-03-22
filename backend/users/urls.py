@@ -11,7 +11,6 @@ router.register(r'user', UserDetailViewSet)
 router.register(r'user/me', UserMeMethodsViewSet, basename='User')
 
 
-
 urlpatterns = [
     path('', include(router.urls))
 ]

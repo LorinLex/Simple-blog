@@ -37,10 +37,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
         slug_field='name',
         queryset=Tag.objects.all(),
         validators=None,
+        required=False,
     )
-    favourite_posts = PostListSerializer(many=True)
-    user_posts = PostListSerializer(many=True)
-    subscribe_users = UserListSerializer(many=True)
+    favourite_posts = PostListSerializer(many=True, required=False)
+    user_posts = PostListSerializer(many=True, required=False)
+    subscribe_users = UserListSerializer(many=True, required=False)
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
     dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
 
