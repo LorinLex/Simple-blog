@@ -1,6 +1,8 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.conf import settings
 from rest_framework import serializers
 from .models import Comment
+
 
 class CommentSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
@@ -9,6 +11,7 @@ class CommentSerializer(serializers.ModelSerializer):
         source='dislikes.count', read_only=True)
     is_liked = serializers.SerializerMethodField('is_liked_method')
     is_disliked = serializers.SerializerMethodField('is_disliked_method')
+    author_id = serializers.SerializerMethodField('get_author')
 
     class Meta:
         model = Comment
@@ -45,13 +48,17 @@ class CommentSerializer(serializers.ModelSerializer):
     def is_liked_method(self, obj):
         try:
             obj.likes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             return False
         return True
 
     def is_disliked_method(self, obj):
         try:
             obj.dislikes.get(pk=self.context['user'].id)
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             return False
         return True
+
+    def get_author(self, instance):
+        from users.serializers import UserListSerializer
+        return UserListSerializer(instance.author_id).data
