@@ -1,8 +1,7 @@
-# from django.contrib.auth.models import User
 from .models import User
 from rest_framework import serializers
-from posts.models import Post, Tag
 from posts.serializers import PostListSerializer
+from posts.models import Post, Tag
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -32,6 +31,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
+
     subscribe_tags = serializers.SlugRelatedField(
         many=True,
         slug_field='name',
@@ -74,4 +74,3 @@ class UserDetailSerializer(serializers.ModelSerializer):
             'user_posts',
             'subscribe_users',
         ]
-

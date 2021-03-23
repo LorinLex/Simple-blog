@@ -4,7 +4,8 @@ from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from .permissions import IsAuthorOrAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UserListSerializer, UserDetailSerializer
+from .serializers import UserListSerializer
+from .serializers import UserDetailSerializer
 from .models import User
 from posts.models import Post, Tag
 

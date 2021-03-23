@@ -35,7 +35,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
         slug_field='name',
         queryset=Tag.objects.all(),
     )
-
+    author_id = serializers.SerializerMethodField('get_author')
 
     class Meta:
         model = Post
@@ -94,6 +94,11 @@ class PostDetailSerializer(serializers.ModelSerializer):
     def is_disliked_method(self, obj):
         return is_liked_disliked_method('dislikes', self, obj)
 
+    def get_author(self, instance):
+        from users.serializers import UserListSerializer
+        return UserListSerializer(instance.author_id).data
+
+
 class PostListSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
     text = serializers.CharField(max_length=200)
@@ -106,6 +111,7 @@ class PostListSerializer(serializers.ModelSerializer):
         slug_field='name',
         queryset=Tag.objects.all()
     )
+    author_id = serializers.SerializerMethodField('get_author')
 
     class Meta:
         model = Post
@@ -136,4 +142,9 @@ class PostListSerializer(serializers.ModelSerializer):
 
     def is_disliked_method(self, obj):
         return is_liked_disliked_method('dislikes', self, obj)
+
+    def get_author(self, instance):
+        from users.serializers import UserListSerializer
+        return UserListSerializer(instance.author_id).data
+
 
