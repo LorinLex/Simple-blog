@@ -28,7 +28,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
     dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
-    is_liked = serializers.SerializerMethodField('is_liked_method')
+    is_liked = serializers.BooleanField(read_only=True)
     is_disliked = serializers.SerializerMethodField('is_disliked_method')
     tags_id = CreatableSlugRelatedField(
         many=True,
@@ -102,10 +102,10 @@ class PostDetailSerializer(serializers.ModelSerializer):
 class PostListSerializer(serializers.ModelSerializer):
     # TODO:  N+1 problem?
     text = serializers.CharField(max_length=200)
-    likes_count = serializers.IntegerField(source='likes.count', read_only=True)
-    dislikes_count = serializers.IntegerField(source='dislikes.count', read_only=True)
-    is_liked = serializers.SerializerMethodField('is_liked_method')
-    is_disliked = serializers.SerializerMethodField('is_disliked_method')
+    likes_count = serializers.IntegerField(read_only=True)
+    dislikes_count = serializers.IntegerField(read_only=True)
+    is_liked = serializers.BooleanField(read_only=True)
+    is_disliked = serializers.BooleanField(read_only=True)
     tags_id = serializers.SlugRelatedField(
         many=True,
         slug_field='name',
@@ -137,11 +137,11 @@ class PostListSerializer(serializers.ModelSerializer):
             'is_disliked'
         ]
 
-    def is_liked_method(self, obj):
-        return is_liked_disliked_method('likes', self, obj)
-
-    def is_disliked_method(self, obj):
-        return is_liked_disliked_method('dislikes', self, obj)
+    # def is_liked_method(self, obj):
+    #     return is_liked_disliked_method('likes', self, obj)
+    #
+    # def is_disliked_method(self, obj):
+    #     return is_liked_disliked_method('dislikes', self, obj)
 
     def get_author(self, instance):
         from users.serializers import UserListSerializer

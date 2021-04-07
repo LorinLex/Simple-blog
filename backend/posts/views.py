@@ -3,15 +3,21 @@ from django.conf import settings
 from .serializers import PostDetailSerializer, PostListSerializer
 from .models import Post, Tag
 from users.permissions import IsAuthorOrAdminOrReadOnly
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticated,\
+    IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from django.db.models import Count, Case, When, BooleanField, Q, Subquery
 
 # Create your views here.
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
+    queryset_list = Post.objects.annotate(
+        likes_count=Count('likes'),
+        dislikes_count=Count('dislikes'),
+    )
     permission_classes = [IsAuthorOrAdminOrReadOnly]
     serializer_class = PostDetailSerializer
     serializers = {
@@ -27,6 +33,40 @@ class PostViewSet(viewsets.ModelViewSet):
         context = super(PostViewSet, self).get_serializer_context()
         context.update({'user': self.request.user})
         return context
+
+    # def get_queryset(self):
+    #     if self.action == 'list':
+    #         return self.queryset_list
+    #     return self.queryset
+
+    def list(self, request, *args, **kwargs):
+        """
+        List переопределен для использования аннотации с id пользователя
+        """
+        # FIXME: make False for anon without query
+        user_id = request.user.id if not request.user.is_anonymous else 0
+        queryset = Post.objects.annotate(
+            likes_count=Count('likes'),
+            dislikes_count=Count('dislikes'),
+            is_liked=Case(
+                When(likes__exact=request.user.id, then=True),
+                default=False,
+                output_field=BooleanField()
+            ),
+            is_disliked=Case(
+                When(dislikes__exact=user_id, then=True),
+                default=False,
+                output_field=BooleanField()
+            ),
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = PostListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(methods=['post'], detail=True,
             url_path='like', url_name='post_like')
